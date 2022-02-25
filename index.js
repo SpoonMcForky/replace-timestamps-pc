@@ -17,7 +17,7 @@ export default class timestamp extends Plugin {
     const then = Math.round((new Date(date)).getTime() / 1000);
     return `<t:${then}:t>`; //To change the time format, refer to https://github.com/discord/discord-api-docs/blob/master/docs/Reference.md#timestamp-styles
   }
-  stopPlugin() {
+  pluginWillUnload() {
     uninject('timestamp');
   }
 }
