@@ -7,7 +7,7 @@ export default class timestamp extends Plugin {
     this.patchMessage();
   }
   patchMessage() {
-    inject('injection', messages, 'sendMessage', args => {
+    inject('timestamp', messages, 'sendMessage', args => {
       if (args[1].content.search(/\d\d:\d\d/) !== -1) args[1].content = args[1].content.replace(/\d\d:\d\d/, this.getUnixTimestamp(args[1].content.match(/\d\d:\d\d/)));
       return args;
     }, true);
@@ -18,6 +18,6 @@ export default class timestamp extends Plugin {
     return `<t:${then}:t>`; //To change the time format, refer to https://github.com/discord/discord-api-docs/blob/master/docs/Reference.md#timestamp-styles
   }
   stopPlugin() {
-    uninject('injection');
+    uninject('timestamp');
   }
 }
