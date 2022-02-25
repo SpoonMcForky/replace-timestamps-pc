@@ -2,7 +2,7 @@ const { Plugin } = require('powercord/entities');
 const { inject, uninject } = require('powercord/injector');
 const { messages } = require('powercord/webpack');
 
-export default class timestamp extends Plugin {
+module.exports = class timestamp extends Plugin {
   startPlugin() {
     this.patchMessage();
   }
