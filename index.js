@@ -8,13 +8,14 @@ module.exports = class timestamp extends Plugin {
   }
   patchMessage() {
     inject('timestamp', messages, 'sendMessage', args => {
-      if (args[1].content.search(/(?<!\d)\d{1,2}:\d{1,2}(?!\d)/) !== -1) args[1].content = args[1].content.replace(/\d\d:\d\d/g, (x) => (this.getUnixTimestamp(x)));
+      if (args[1].content.search(/(?<!\d)\d{1,2}:\d{2}(?!\d)/) !== -1) args[1].content = args[1].content.replace(/\d?\d:\d\d/g, x => (this.getUnixTimestamp(x)));
       return args;
     }, true);
   }
   getUnixTimestamp(time) {
-    const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').replace(/\d\d:\d\d/, time);
+    const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').replace(/\d?\d:\d\d/, time);
     const then = Math.round((new Date(date)).getTime() / 1000);
+    if (isNaN(then)) return time;
     return `<t:${then}:t>`; //To change the time format, refer to https://github.com/discord/discord-api-docs/blob/master/docs/Reference.md#timestamp-styles
   }
   pluginWillUnload() {
