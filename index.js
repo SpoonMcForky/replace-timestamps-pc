@@ -8,7 +8,7 @@ module.exports = class timestamp extends Plugin {
   }
   patchMessage() {
     inject('timestamp', messages, 'sendMessage', args => {
-      if (args[1].content.search(/\d\d:\d\d/) !== -1) args[1].content = args[1].content.replace(/\d\d:\d\d/, this.getUnixTimestamp(args[1].content.match(/\d\d:\d\d/)));
+      if (args[1].content.search(/(?<!\d)\d{1,2}:\d{1,2}(?!\d)/) !== -1) args[1].content = args[1].content.replace(/\d\d:\d\d/, this.getUnixTimestamp(args[1].content.match(/\d\d:\d\d/)));
       return args;
     }, true);
   }
@@ -20,4 +20,4 @@ module.exports = class timestamp extends Plugin {
   pluginWillUnload() {
     uninject('timestamp');
   }
-}
+};
