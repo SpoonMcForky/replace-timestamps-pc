@@ -21,15 +21,10 @@ module.exports = class timestamp extends Plugin {
   patchMessage() { //Lighty made this better because he felt like it
     inject('timestamp', messages, 'sendMessage', args => {
       const char = this.settings.get('char');
-      const reg = `${char.length ? (`(\\${ char })`) : ''}((?<!\\d)\\d{1,2}:\\d{2}(?!\\d))(am|pm)?`;
-      const regexAGlobal = new RegExp(reg, 'gi');
-      const regexA = new RegExp(reg, 'i');
+      const regexAGlobal = new RegExp(`${char.length ? (`\\${ char}`) : ''}(?<!\\d)\\d{1,2}:\\d{2}(?!\\d)(am|pm)?`, 'gi');
+      const regexA = new RegExp(`${char.length ? (`\\${ char}`) : ''}((?<!\\d)\\d{1,2}:\\d{2}(?!\\d))(am|pm)?`, 'i');
       if (args[1].content.search(regexAGlobal) !== -1) args[1].content = args[1].content.replace(regexAGlobal, x => {
-        let [, unk, time, suffix] = x.match(regexA);
-        if (!char.length) {
-          suffix = time;
-          time = unk;
-        }
+        let [, time, suffix] = x.match(regexA);
         if (suffix && suffix.toLowerCase() === 'pm') {
           let [hours, minutes] = time.split(':').map(e => parseInt(e));
           hours += 12;
@@ -37,6 +32,7 @@ module.exports = class timestamp extends Plugin {
         }
         return this.getUnixTimestamp(time);
       });
+      
       return args;
     }, true);
   }
