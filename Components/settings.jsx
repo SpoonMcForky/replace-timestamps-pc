@@ -1,10 +1,17 @@
-const { React } = require('powercord/webpack'); // We have to import React
-const { SwitchItem } = require('powercord/components/settings'); // Here we Import the TextInput Component for later use
-
+const { React } = require('powercord/webpack');
+const { SwitchItem } = require('powercord/components/settings');
+const { TextInput } = require('powercord/components/settings');
 module.exports = class settings extends React.PureComponent {
   render() {
     return (
       <div>
+        
+        <TextInput
+          value={this.props.getSetting('char')}
+          onChange={e => this.props.updateSetting('char', e)}
+        >
+          Prefix for timestamp, leave blank for no prefix.
+        </TextInput>
         <SwitchItem
           value={this.props.getSetting('t')}
           onChange={() => this.props.toggleSetting('t')}
