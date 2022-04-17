@@ -24,7 +24,6 @@ module.exports = class timestamp extends Plugin {
       const reg = `${char.length ? (`(\\${ char })`) : ''}((?<!\\d)\\d{1,2}:\\d{2}(?!\\d))(am|pm)?`;
       const regexAGlobal = new RegExp(reg, 'gi');
       const regexA = new RegExp(reg, 'i');
-      console.log(args[1].content, args[1].content.replace(regexAGlobal, 'balls'));
       if (args[1].content.search(regexAGlobal) !== -1) args[1].content = args[1].content.replace(regexAGlobal, x => {
         let [, unk, time, suffix] = x.match(regexA);
         if (!char.length) {
@@ -42,7 +41,6 @@ module.exports = class timestamp extends Plugin {
     }, true);
   }
   getUnixTimestamp(time) {
-    console.log(time);
     const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').replace(/\d?\d:\d\d/, time);
     const then = Math.round((new Date(date)).getTime() / 1000);
     if (isNaN(then)) return time;
