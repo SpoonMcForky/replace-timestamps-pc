@@ -21,8 +21,10 @@ module.exports = class timestamp extends Plugin {
   patchMessage() { //Lighty made this better because he felt like it
     inject('timestamp', messages, 'sendMessage', args => {
       const char = this.settings.get('char');
-      const regexAGlobal = new RegExp(`${char.length ? (`\\${ char}`) : ''}(?<!\\d)\\d{1,2}:\\d{2}(?!\\d)(am|pm)?`, 'gi');
-      const regexA = new RegExp(`${char.length ? (`\\${ char}`) : ''}((?<!\\d)\\d{1,2}:\\d{2}(?!\\d))(am|pm)?`, 'i');
+      char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      console.log(char);
+      const regexAGlobal = new RegExp(`${char.length ? (`${ char}`) : ''}(?<!\\d)\\d{1,2}:\\d{2}(?!\\d)(am|pm)?`, 'gi');
+      const regexA = new RegExp(`${char.length ? (`${ char}`) : ''}((?<!\\d)\\d{1,2}:\\d{2}(?!\\d))(am|pm)?`, 'i');
       if (args[1].content.search(regexAGlobal) !== -1) args[1].content = args[1].content.replace(regexAGlobal, x => {
         let [, time, suffix] = x.match(regexA);
         if (suffix && suffix.toLowerCase() === 'pm') {
