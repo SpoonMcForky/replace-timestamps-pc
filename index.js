@@ -20,8 +20,10 @@ module.exports = class timestamp extends Plugin {
   }
   patchMessage() { //Lighty made this better because he felt like it
     inject('timestamp', messages, 'sendMessage', args => {
-      const char = this.settings.get('char');
-      char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
+      
+      let char = this.settings.get('char');
+      if (!char) char = '';
+      char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'); 
       console.log(char);
       const regexAGlobal = new RegExp(`${char.length ? (`${ char}`) : ''}(?<!\\d)\\d{1,2}:\\d{2}(?!\\d)(am|pm)?`, 'gi');
       const regexA = new RegExp(`${char.length ? (`${ char}`) : ''}((?<!\\d)\\d{1,2}:\\d{2}(?!\\d))(am|pm)?`, 'i');
