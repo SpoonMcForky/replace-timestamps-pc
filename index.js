@@ -24,13 +24,12 @@ module.exports = class timestamp extends Plugin {
       let char = this.settings.get('char');
       if (!char) char = '';
       char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'); 
-      console.log(char);
       const regexAGlobal = new RegExp(`${char.length ? (`${ char}`) : ''}(?<!\\d)\\d{1,2}:\\d{2}(?!\\d)(am|pm)?`, 'gi');
       const regexA = new RegExp(`${char.length ? (`${ char}`) : ''}((?<!\\d)\\d{1,2}:\\d{2}(?!\\d))(am|pm)?`, 'i');
       if (args[1].content.search(regexAGlobal) !== -1) args[1].content = args[1].content.replace(regexAGlobal, x => {
         let [, time, suffix] = x.match(regexA);
         let [hours, minutes] = time.split(':').map(e => parseInt(e));
-        if (suffix && suffix.toLowerCase() === 'pm' && hours > 12 && hours === 0) {
+        if (suffix && suffix.toLowerCase() === 'pm' && hours < 12 && hours !== 0) {
           hours += 12;
           minutes = minutes.toString().padStart(2, '0');
           time = `${hours}:${minutes}`;
@@ -46,7 +45,6 @@ module.exports = class timestamp extends Plugin {
     }, true);
   }
   getUnixTimestamp(time) {
-    console.log(time);
     const date = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '').replace(/\d?\d:\d\d/, time);
     const then = Math.round((new Date(date)).getTime() / 1000);
     if (isNaN(then)) return time;
