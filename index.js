@@ -3,7 +3,7 @@ const { inject, uninject } = require('powercord/injector');
 const { messages } = require('powercord/webpack');
 
 let prefix;
-const Settings = require('./components/settings.jsx');
+const Settings = require('./Components/settings.jsx');
 module.exports = class timestamp extends Plugin {
   startPlugin() {
     this.setDefault('t', true);
