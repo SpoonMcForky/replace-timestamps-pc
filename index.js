@@ -1,69 +1,29 @@
 const { Plugin } = require("powercord/entities");
 const { inject, uninject } = require("powercord/injector");
 const { messages } = require("powercord/webpack");
+const Formats = require("./util/formats.js");
 
-let prefix;
-let suppliedPrefix;
-const Settings = require("./Components/settings.jsx");
-module.exports = class timestamp extends Plugin {
+module.exports = class ReplaceTimestamps extends Plugin {
   startPlugin() {
-    this.setDefault("t", true);
-    powercord.api.settings.registerSettings(this.entityID, {
-      category: this.entityID,
-      label: "Replace Timestamps",
-      render: Settings,
-    });
-    this.patchMessage();
-  }
-  setDefault(name, defaultValue) {
-    this.settings.set(name, this.settings.get(name, defaultValue));
-    prefix = name;
-  }
-  patchMessage() {
-    //Lighty made this better because he felt like it
-    inject(
-      "timestamp",
-      messages,
-      "sendMessage",
-      (args) => {
-        let char = this.settings.get("char");
-        if (!char) char = "";
-        char.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-        console.log(
-          args[1].content
-            .replace(`${char.length ? `${char}` : ""}`, "")
-            .substring(1, 2)
-        );
-        if (
-          char.length > 0 &&
-          args[1].content
-            .replace(`${char.length ? `${char}` : ""}`, "")
-            .substring(1, 2) === char[char.length - 1] &&
-          args[1].content
-            .replace(`${char.length ? `${char}` : ""}`, "")
-            .substring(1, 2)
-            .match(/\W/g) &&
-          char[char.length - 1].match(/\W/g)
-        ) {
-          suppliedPrefix = args[1].content
-            .replace(`${char.length ? `${char}` : ""}`, "")
-            .substring(0, 1);
-          char = `${char}${suppliedPrefix}${char[char.length - 1]}`;
-        }
-        const regexAGlobal = new RegExp(
-          `${
-            char.length ? `${char}` : ""
-          }(?<!\\d)\\d{1,2}:\\d{2}(?!\\d)(am|pm)?`,
-          "gi"
-        );
-        const regexA = new RegExp(
-          `${
-            char.length ? `${char}` : ""
-          }((?<!\\d)\\d{1,2}:\\d{2}(?!\\d))(am|pm)?`,
-          "i"
-        );
-        if (args[1].content.search(regexAGlobal) !== -1)
-          args[1].content = args[1].content.replace(regexAGlobal, (x) => {
+    powercord.api.commands.registerCommand({
+      command: "timestamp",
+      description: "Command to generate Discord timestamps",
+      usage: "{c} <prefix> <timesamp>",
+      executor: (args) => {
+        const prefixes = {
+          0: "t",
+          1: "T",
+          2: "d",
+          3: "D",
+          4: "f",
+          5: "F",
+          6: "R",
+        };
+        const regexAGlobal = /(?<!\d)\d{1,2}:\d{2}(?!\d)(am|pm)?/gi;
+        const regexA = /((?<!\d)\d{1,2}:\d{2}(?!\d))(am|pm)?/i;
+        let output = "";
+        if (args[1].search(regexAGlobal) !== -1) {
+          output = args[1].replace(regexAGlobal, (x) => {
             let [, time, suffix] = x.match(regexA);
             let [hours, minutes] = time.split(":").map((e) => parseInt(e));
             if (
@@ -78,21 +38,58 @@ module.exports = class timestamp extends Plugin {
             } else if (
               (suffix && suffix.toLowerCase() === "am" && hours === 12) ||
               hours === 24
-            )
+            ) {
               time = `00:${minutes}`;
-            else if (minutes >= 60) {
+            } else if (minutes >= 60) {
               hours += Math.floor(minutes / 60);
               minutes = minutes % 60;
               time = `${hours}:${minutes}`;
             }
-            return this.getUnixTimestamp(time);
+            return this.getUnixTimestamp(
+              time,
+              prefixes[Formats.indexOf(args[0])]
+            );
           });
-        return args;
+        }
+        return {
+          send: true,
+          result: `${output}`,
+        };
       },
-      true
-    );
+      autocomplete: (args) => {
+        if (args[0] == void 0 || args[0] == undefined || args[0] == "") {
+          return {
+            commands: Array.from(Formats).map((format) => {
+              return {
+                command: format,
+                description: `Format ${format}`,
+              };
+            }),
+            header: "formats",
+          };
+        }
+        if (
+          Array.from(Formats).filter(
+            (x) => x.toLowerCase() === args[0].toLowerCase()
+          )[0] !== undefined
+        ) {
+          return { commands: false };
+        }
+        return {
+          commands: Array.from(Formats)
+            .filter((x) => x.toLowerCase().includes(args[0].toLowerCase()))
+            .map((format) => {
+              return {
+                command: format,
+                description: `Format ${format}`,
+              };
+            }),
+          header: "formats",
+        };
+      },
+    });
   }
-  getUnixTimestamp(time) {
+  getUnixTimestamp(time, suppliedPrefix) {
     const date = new Date()
       .toISOString()
       .replace(/T/, " ")
@@ -100,23 +97,9 @@ module.exports = class timestamp extends Plugin {
       .replace(/\d?\d:\d\d/, time);
     const then = Math.round(new Date(date).getTime() / 1000);
     if (isNaN(then)) return time;
-    console.log("prefix:" + suppliedPrefix);
-    if (!suppliedPrefix) {
-      if (this.settings.get("t")) prefix = "t";
-      else if (this.settings.get("T")) prefix = "T";
-      else if (this.settings.get("d")) prefix = "d";
-      else if (this.settings.get("D")) prefix = "D";
-      else if (this.settings.get("f")) prefix = "f";
-      else if (this.settings.get("F")) prefix = "F";
-      else if (this.settings.get("R")) prefix = "R";
-    } else {
-      prefix = suppliedPrefix;
-    }
-    return `<t:${then}:${prefix}>`;
+    return `<t:${then}:${suppliedPrefix}>`;
   }
   pluginWillUnload() {
-    uninject("timestamp");
-    powercord.api.settings.unregisterSettings(this.entityID);
-    powercord.api.settings.unregisterSettings(this.entityID);
+    powercord.api.commands.unregisterCommand("timestamp");
   }
 };
